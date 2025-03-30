@@ -1,0 +1,10 @@
+{
+    "system_template_text_preprocessing": [
+        "This is an extracted page from a PDF document. Follow the steps below in order.",
+        "Step 1: Analyze the page layout and separate it into two columns. You will find that one column contains a very brief summary of the other. Discard the brief summary column entirely.",
+        "Step 2: Extract the original column. Analyze the text. Remove unnecessary new line characters and structure the text for readability.",
+        "Step 3: Remove any footnotes available.",
+        "Step 4: Remove the first line if it is 'The Constitution of the Democratic Socialist Republic of Sri Lanka'.",
+        "Step 5: Return the preprocessed text."
+    ]
+}
