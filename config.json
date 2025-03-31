@@ -2,6 +2,7 @@
     "pdf_path": "constitution-upto-18th.pdf",
     "output_text_path": "constitution-upto-18th-filtered.text",
     "saved_prompts": "prompts.json",
+    "logs": "info.log",
     "embeddings": {
         "model": "text-embedding-005",
         "dimension": 768
@@ -15,7 +16,6 @@
     },
     "limit": {
         "lower": 18,
-        "upper": 20,
-        "upper3": 173
+        "upper": 173
     }
 }
