@@ -1,7 +1,4 @@
 from langchain_community.document_loaders import PyPDFLoader
-from langchain_google_vertexai import VertexAIEmbeddings
-from langchain_pinecone import PineconeVectorStore
-from pinecone import Pinecone
 from typing import List
 
 
@@ -24,16 +21,13 @@ def filter_text(file_path, template, model, pages):
             content = response.content.replace("\n", " ")
             # Add a space after content
             file.write(f"{content} ")
-        return None
-
-
-def create_db(vertextai_embedding_model_name, dimension, pinecone_index, namespace, pinecone_api_key, splits):
-    if vertextai_embedding_model_name == "text-embedding-005":
-        assert dimension == 768
-    embeddings = VertexAIEmbeddings(model=vertextai_embedding_model_name)
-    pinecone = Pinecone(api_key=pinecone_api_key)
-    index = pinecone.Index(pinecone_index)
-    vector_store = PineconeVectorStore(embedding=embeddings, index=index, namespace=namespace)
-    vector_store.add_documents(documents=splits)
     return None
+
+
+def create_db(vertextai_embedding_model, dimension, splits, vector_store):
+    if vertextai_embedding_model == "text-embedding-005":
+        assert dimension == 768
+        vector_store.add_documents(documents=splits)
+    return None
+
 
