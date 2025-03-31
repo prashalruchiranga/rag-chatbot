@@ -4,7 +4,7 @@ import vertexai
 from langchain.chat_models import init_chat_model
 from langchain_core.prompts import ChatPromptTemplate
 import json
-from langchain.document_loaders import TextLoader
+from langchain_community.document_loaders import TextLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 import asyncio
 from langchain_google_vertexai import VertexAIEmbeddings
@@ -12,6 +12,7 @@ from langchain_pinecone import PineconeVectorStore
 from pinecone import Pinecone
 from pinecone import ServerlessSpec
 import time
+import logging
 from utilities import Load_PDF, create_db, filter_text
 
 
@@ -25,6 +26,7 @@ dotenv_path = os.path.join(script_dir, "../.env")
 pdf_path = os.path.join(script_dir, "data", config["pdf_path"])
 output_text_path = os.path.join(script_dir, "data", config["output_text_path"])
 saved_prompts = os.path.join(script_dir, "../", config["saved_prompts"])
+log_path = os.path.join(script_dir, "../", config["logs"])
 
 
 ### Load environment variables
@@ -34,6 +36,14 @@ GOOGLE_CLOUD_PROJECT = os.getenv("GOOGLE_CLOUD_PROJECT")
 GOOGLE_CLOUD_LOCATION = os.getenv("GOOGLE_CLOUD_LOCATION")
 GOOGLE_GENAI_USE_VERTEXAI = os.getenv("GOOGLE_GENAI_USE_VERTEXAI")
 PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
+
+
+# Configure logging
+logging.basicConfig(
+    filename=log_path,   
+    level=logging.INFO,    
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
 
 ### Configure the Language Model
@@ -68,7 +78,7 @@ text_splitter = RecursiveCharacterTextSplitter(
     keep_separator=True
 )
 all_splits = text_splitter.split_documents(docs)
-print(f"Split the text file post into {len(all_splits)} sub-documents.")
+logging.info(f"Split the text file post into {len(all_splits)} sub-documents.")
 
 
 ### Add Documents to Pinecone vector db
@@ -90,6 +100,7 @@ if index_name not in [index_info["name"] for index_info in pinecone.list_indexes
         metric=similarity_metric,
         spec=ServerlessSpec(cloud=cloud_provider, region=aws_region)
         )
+    logging.info(f"Created index {index_name}")
     while not pinecone.describe_index(index_name).status["ready"]:
         time.sleep(1)
 
