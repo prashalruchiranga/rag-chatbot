@@ -1,0 +1,21 @@
+{
+    "pdf_path": "constitution-upto-18th.pdf",
+    "output_text_path": "constitution-upto-18th-filtered.text",
+    "saved_prompts": "prompts.json",
+    "embeddings": {
+        "model": "text-embedding-005",
+        "dimension": 768
+    },
+    "index": {
+        "name": "data-vectors",
+        "namespace": "Acts",
+        "cloud_provider": "aws",
+        "region": "us-east-1",
+        "similarity_metric": "cosine"
+    },
+    "limit": {
+        "lower": 18,
+        "upper": 20,
+        "upper3": 173
+    }
+}
