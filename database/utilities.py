@@ -1,5 +1,6 @@
 from langchain_community.document_loaders import PyPDFLoader
 from typing import List
+from langchain_core.documents import Document
 
 
 async def Load_PDF(file_path: str) -> List:
@@ -27,7 +28,13 @@ def filter_text(file_path, template, model, pages):
 def create_db(vertextai_embedding_model, dimension, splits, vector_store):
     if vertextai_embedding_model == "text-embedding-005":
         assert dimension == 768
-        vector_store.add_documents(documents=splits)
-    return None
+        record_ids = vector_store.add_documents(documents=splits)
+    return record_ids
+
+
+def update_metadata(field: str, value: str, splits: List[Document]) -> List[Document]:
+    for split in splits:
+        split.metadata[field] = value
+    return splits
 
 
