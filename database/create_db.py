@@ -13,7 +13,7 @@ from pinecone import Pinecone
 from pinecone import ServerlessSpec
 import time
 import logging
-from utilities import Load_PDF, create_db, filter_text
+from utilities import Load_PDF, create_db, filter_text, update_metadata
 
 
 ### Define file paths
@@ -56,6 +56,7 @@ pages = asyncio.run(Load_PDF(file_path=pdf_path))
 with open(saved_prompts, "r") as file:
     prompts = json.load(file)
 
+
 system_template = "\n\n".join(prompts["system_template_text_preprocessing"])
 prompt_template = ChatPromptTemplate.from_messages([("system", system_template), ("user", "{page}")])  
 _ = filter_text(output_text_path, prompt_template, gemini, pages)
@@ -75,6 +76,10 @@ text_splitter = RecursiveCharacterTextSplitter(
 )
 all_splits = text_splitter.split_documents(docs)
 logging.info(f"Split the text file post into {len(all_splits)} sub-documents.")
+
+
+### Update source field in metadata 
+all_splits = update_metadata("source", config["pdf_path"], all_splits)
 
 
 ### Add Documents to Pinecone vector db
@@ -99,7 +104,18 @@ if index_name not in [index_info["name"] for index_info in pinecone.list_indexes
     logging.info(f"Created index {index_name}")
     while not pinecone.describe_index(index_name).status["ready"]:
         time.sleep(1)
+else:
+    raise Exception(f"Index {index_name} already exists")
 
 vector_store = PineconeVectorStore(embedding=embeddings, index=pinecone.Index(index_name), namespace=namespace)
-_ = create_db(vertextai_embedding_model=embedding_model, dimension=vector_dimension, splits=all_splits, vector_store=vector_store)
+ids = create_db(vertextai_embedding_model=embedding_model, dimension=vector_dimension, splits=all_splits, vector_store=vector_store)
+
+
+### Log information
+for id in ids:
+    logging.info(f"Created record: {id}") 
+log = f"Inserted {len(ids)} records."
+logging.info(log)
+print(f"{log} See the log file for record ids.")
+
 
