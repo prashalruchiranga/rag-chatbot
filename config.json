@@ -1,5 +1,5 @@
 {
-    "pdf_path": "constitution-upto-18th.pdf",
+    "pdf_path": "constitution-upto-18th-removed.pdf",
     "output_text_path": "constitution-upto-18th-filtered.text",
     "saved_prompts": "prompts.json",
     "logs": "info.log",

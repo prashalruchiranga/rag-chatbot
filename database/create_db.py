@@ -58,11 +58,7 @@ with open(saved_prompts, "r") as file:
 
 system_template = "\n\n".join(prompts["system_template_text_preprocessing"])
 prompt_template = ChatPromptTemplate.from_messages([("system", system_template), ("user", "{page}")])  
-
-lower = config["limit"]["lower"]
-upper = config["limit"]["upper"]
-relevant_pages = pages[lower:upper] # Remove unncessary information. 
-_ = filter_text(output_text_path, prompt_template, gemini, relevant_pages)
+_ = filter_text(output_text_path, prompt_template, gemini, pages)
 
 
 ### Load filtered text file and split it to Document objects
