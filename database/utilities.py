@@ -22,7 +22,7 @@ def filter_text(file_path, template, model, pages):
             content = response.content.replace("\n", " ")
             # Add a space after content
             file.write(f"{content} ")
-    return None
+    return file_path
 
 
 def create_db(vertextai_embedding_model, dimension, splits, vector_store):

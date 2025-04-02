@@ -1,19 +1,16 @@
 import os
 from dotenv import load_dotenv
-import vertexai
-from langchain.chat_models import init_chat_model
-from langchain_core.prompts import ChatPromptTemplate
 import json
 from langchain_community.document_loaders import TextLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-import asyncio
 from langchain_google_vertexai import VertexAIEmbeddings
 from langchain_pinecone import PineconeVectorStore
 from pinecone import Pinecone
 from pinecone import ServerlessSpec
 import time
 import logging
-from utilities import Load_PDF, create_db, filter_text, update_metadata
+from pathlib import Path
+from utilities import create_db, update_metadata
 
 
 ### Define file paths
@@ -23,10 +20,9 @@ with open(config_path, "r") as file:
     config = json.load(file)
 
 dotenv_path = os.path.join(script_dir, "../.env")
-pdf_path = os.path.join(script_dir, "data", config["pdf_path"])
-output_text_path = os.path.join(script_dir, "data", config["output_text_path"])
-saved_prompts = os.path.join(script_dir, "../", config["saved_prompts"])
-log_path = os.path.join(script_dir, "../", config["logs"])
+data_dir = os.path.join(script_dir, "data")
+log_dir = os.path.join(script_dir, "../", "logs")
+database_log = os.path.join(log_dir, config["logging"]["database"])
 
 
 ### Load environment variables
@@ -38,34 +34,20 @@ GOOGLE_GENAI_USE_VERTEXAI = os.getenv("GOOGLE_GENAI_USE_VERTEXAI")
 PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
 
 
-# Configure logging
+### Configure logging
 logging.basicConfig(
-    filename=log_path,   
+    filename=database_log,   
     level=logging.INFO,    
     format="%(asctime)s - %(levelname)s - %(message)s"
 )
 
 
-### Configure the Language Model
-vertexai.init(project=GOOGLE_CLOUD_PROJECT, location=GOOGLE_CLOUD_LOCATION) 
-gemini = init_chat_model("gemini-2.0-flash-001", model_provider="google_vertexai")
-
-
-### Extract text from the pdf, filter and save them to a text file
-pages = asyncio.run(Load_PDF(file_path=pdf_path))
-with open(saved_prompts, "r") as file:
-    prompts = json.load(file)
-
-
-system_template = "\n\n".join(prompts["system_template_text_preprocessing"])
-prompt_template = ChatPromptTemplate.from_messages([("system", system_template), ("user", "{page}")])  
-_ = filter_text(output_text_path, prompt_template, gemini, pages)
+### Open txt files
+directory = Path(data_dir)
+txt_files = [f.name for f in directory.glob("*.txt")]
 
 
 ### Load filtered text file and split it to Document objects
-loader = TextLoader(output_text_path)
-docs = loader.load()
-
 text_splitter = RecursiveCharacterTextSplitter(
     chunk_size=1000,  
     chunk_overlap=400,  
@@ -74,12 +56,15 @@ text_splitter = RecursiveCharacterTextSplitter(
     is_separator_regex=True,
     keep_separator=True
 )
-all_splits = text_splitter.split_documents(docs)
-logging.info(f"Split the text file post into {len(all_splits)} sub-documents.")
 
-
-### Update source field in metadata 
-all_splits = update_metadata("source", config["pdf_path"], all_splits)
+for file in txt_files:
+    txt_path = os.path.join(data_dir, file)
+    loader = TextLoader(txt_path)
+    docs = loader.load()
+    all_splits = text_splitter.split_documents(docs)
+    logging.info(f"Split the text file {txt_path} into {len(all_splits)} sub-documents.")
+    # Update source field in metadata 
+    all_splits = update_metadata("source", file, all_splits)
 
 
 ### Add Documents to Pinecone vector db
