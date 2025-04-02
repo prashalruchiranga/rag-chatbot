@@ -3,5 +3,5 @@ env/
 .env
 .DS_Store
 *key.json
-*.log
+logs/
 __pycache__
