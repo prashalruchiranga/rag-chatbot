@@ -42,32 +42,22 @@ logging.basicConfig(
 )
 
 
-### Open txt files
+### Open text files
 directory = Path(data_dir)
 txt_files = [f.name for f in directory.glob("*.txt")]
 
 
-### Load filtered text file and split it to Document objects
+### Create a text splitter
 text_splitter = RecursiveCharacterTextSplitter(
     chunk_size=1000,  
-    chunk_overlap=400,  
+    chunk_overlap=500,  
     add_start_index=True,  
-    separators=[r'CHAPTER\s+[IVXLCDM]*\s',r'\d+\.\s'],
+    #separators=[r'CHAPTER\s+[IVXLCDM]*\s',r'\d+\.\s', r'\.\s'],
     is_separator_regex=True,
     keep_separator=True
 )
 
-for file in txt_files:
-    txt_path = os.path.join(data_dir, file)
-    loader = TextLoader(txt_path)
-    docs = loader.load()
-    all_splits = text_splitter.split_documents(docs)
-    logging.info(f"Split the text file {txt_path} into {len(all_splits)} sub-documents.")
-    # Update source field in metadata 
-    all_splits = update_metadata("source", file, all_splits)
-
-
-### Add Documents to Pinecone vector db
+### Load Pinecone configuration parameters
 embedding_model = config["embeddings"]["model"]
 vector_dimension = config["embeddings"]["dimension"]
 index_name = config["index"]["name"]
@@ -76,9 +66,13 @@ cloud_provider = config["index"]["cloud_provider"]
 aws_region = config["index"]["region"]
 similarity_metric = config["index"]["similarity_metric"]
 
+
+### Define embedding model and vector database
 embeddings = VertexAIEmbeddings(model=embedding_model)
 pinecone = Pinecone(api_key=PINECONE_API_KEY)
 
+
+### Create index if does not exist
 if index_name not in [index_info["name"] for index_info in pinecone.list_indexes()]:
     pinecone.create_index(
         name=index_name,
@@ -92,14 +86,28 @@ if index_name not in [index_info["name"] for index_info in pinecone.list_indexes
 else:
     raise Exception(f"Index {index_name} already exists")
 
+
 vector_store = PineconeVectorStore(embedding=embeddings, index=pinecone.Index(index_name), namespace=namespace)
-ids = create_db(vertextai_embedding_model=embedding_model, dimension=vector_dimension, splits=all_splits, vector_store=vector_store)
 
 
-### Log information
-for id in ids:
-    logging.info(f"Created record: {id}") 
-log = f"Inserted {len(ids)} records."
+### Load filtered text file and split it to Document objects
+total_records_inserted = 0
+for file in txt_files:
+    txt_path = os.path.join(data_dir, file)
+    loader = TextLoader(txt_path)
+    docs = loader.load()
+    all_splits = text_splitter.split_documents(docs)
+    logging.info(f"Split the text file {txt_path} into {len(all_splits)} sub-documents.")
+    # Update source field in metadata 
+    all_splits = update_metadata("source", file, all_splits)
+    # Add Documents to Pinecone vector db
+    ids = create_db(vertextai_embedding_model=embedding_model, dimension=vector_dimension, splits=all_splits, vector_store=vector_store)
+    total_records_inserted += len(ids)
+    # Log information
+    for id in ids:
+        logging.info(f"Created record: {id}") 
+
+log = f"Inserted {total_records_inserted} records."
 logging.info(log)
 print(f"{log} See the log file for record ids.")
 

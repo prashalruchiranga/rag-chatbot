@@ -1,8 +1,14 @@
 {
-    "pdf_path": "constitution-upto-18th-removed.pdf",
-    "output_text_path": "constitution-upto-18th-filtered.text",
     "saved_prompts": "prompts.json",
-    "logs": "info.log",
+    "model": {
+        "name": "gemini-2.5-pro-exp-03-25",
+        "provider": "google_vertexai"
+    },
+    "logging": {
+        "preprocessor": "preprocessor.log",
+        "database": "database.log",
+        "workflow": "workflow.log"
+    },
     "embeddings": {
         "model": "text-embedding-005",
         "dimension": 768
@@ -13,9 +19,5 @@
         "cloud_provider": "aws",
         "region": "us-east-1",
         "similarity_metric": "cosine"
-    },
-    "limit": {
-        "lower": 18,
-        "upper": 173
     }
 }

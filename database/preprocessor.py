@@ -40,8 +40,10 @@ logging.basicConfig(
 
 
 ### Configure the Language Model
+llm = config["model"]["name"]
+llm_provider = config["model"]["provider"]
 vertexai.init(project=GOOGLE_CLOUD_PROJECT, location=GOOGLE_CLOUD_LOCATION) 
-gemini = init_chat_model("gemini-2.0-flash-001", model_provider="google_vertexai")
+gemini = init_chat_model(model=llm, model_provider=llm_provider)
 
 
 ### Load saved prompts
@@ -59,7 +61,7 @@ pdf_files = [f.name for f in directory.glob("*.pdf")]
 ### Extract text from the PDFs, filter and save them to text files
 for pdf in pdf_files:
     pdf_path = Path(os.path.join(data_dir, pdf))
-    output_path = pdf_path.with_stem(pdf_path.stem + "-filtered").with_suffix(".txt")
+    output_path = pdf_path.with_stem(pdf_path.stem + "_filtered").with_suffix(".txt")
     pages = asyncio.run(Load_PDF(file_path=pdf_path))
     log = filter_text(output_path, prompt_template, gemini, pages)
     logging.info(f"filtered text file created: {log}")
