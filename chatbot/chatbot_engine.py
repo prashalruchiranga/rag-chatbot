@@ -12,11 +12,11 @@ class ChatSession:
         self.model = model
         self.vector_store = vector_store
         self.memory = MemorySaver()
-        self.retrieve = self.make_retrieve_tool(self.vector_store)
+        self.retrieve = self._make_retrieve_tool(self.vector_store)
         self.graph = self._build_graph()
 
 
-    def make_retrieve_tool(self, vector_store):
+    def _make_retrieve_tool(self, vector_store):
         @tool(response_format="content_and_artifact")
         def retrieve(query: str):
             """Retrieve information related to a query."""
@@ -98,18 +98,17 @@ class ChatSession:
         graph_builder.add_edge("generate", END)
         return graph_builder.compile(checkpointer=self.memory)
     
-
-    def send_message(self, thread_id: str, message: str):
-        return self.graph.invoke(thread_id=thread_id, input={"message": message})
     
-    
-    def _stream(self, thread_id: str, message: str):
+    def stream_values(self, thread_id: str, message: str):
         for step in self.graph.stream(
             {"messages": [{"role": "user", "content": message}]},
             stream_mode="values",
             config = {"configurable": {"thread_id": thread_id}}
         ):
             step["messages"][-1].pretty_print()
+
     
+    def send_message(self, thread_id: str, message: str):
+        return self.graph.invoke(thread_id=thread_id, input={"message": message})
 
 
