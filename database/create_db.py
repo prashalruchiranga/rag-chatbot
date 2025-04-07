@@ -4,111 +4,81 @@ import json
 from langchain_community.document_loaders import TextLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_google_vertexai import VertexAIEmbeddings
-from langchain_pinecone import PineconeVectorStore
-from pinecone import Pinecone
-from pinecone import ServerlessSpec
-import time
-import logging
 from pathlib import Path
-from utilities import create_db, update_metadata
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_google_vertexai import VertexAIEmbeddings
+import faiss
+from langchain_community.docstore.in_memory import InMemoryDocstore
+from langchain_community.vectorstores import FAISS
+import asyncio
+import logging
+from pdf_processor import PDFProcessor
 
 
-### Define file paths
-script_dir = os.path.dirname(os.path.abspath(__file__))
-config_path = os.path.join(script_dir, "../", "config.json")
-with open(config_path, "r") as file:
-    config = json.load(file)
+async def create_db():
+    ### Define file paths
+    script_dir = Path(__file__).resolve().parent
+    data_dir = script_dir.joinpath("data")
+    config_path = script_dir.joinpath("../", "config.json")
+    dotenv_path = script_dir.joinpath("../", ".env")
+    log_path = script_dir.joinpath("../", "logs.log")
 
-dotenv_path = os.path.join(script_dir, "../.env")
-data_dir = os.path.join(script_dir, "data")
-log_dir = os.path.join(script_dir, "../", "logs")
-database_log = os.path.join(log_dir, config["logging"]["database"])
+    ### Open configuration file
+    with open(config_path, "r") as file:
+        config = json.load(file)
 
+    ### Load environment variables
+    load_dotenv(dotenv_path)
+    GOOGLE_APPLICATION_CREDENTIALS = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+    GOOGLE_CLOUD_PROJECT = os.getenv("GOOGLE_CLOUD_PROJECT")
+    GOOGLE_CLOUD_LOCATION = os.getenv("GOOGLE_CLOUD_LOCATION")
+    GOOGLE_GENAI_USE_VERTEXAI = os.getenv("GOOGLE_GENAI_USE_VERTEXAI")
 
-### Load environment variables
-load_dotenv(dotenv_path)
-GOOGLE_APPLICATION_CREDENTIALS = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
-GOOGLE_CLOUD_PROJECT = os.getenv("GOOGLE_CLOUD_PROJECT")
-GOOGLE_CLOUD_LOCATION = os.getenv("GOOGLE_CLOUD_LOCATION")
-GOOGLE_GENAI_USE_VERTEXAI = os.getenv("GOOGLE_GENAI_USE_VERTEXAI")
-PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
+    ### Configure logging
+    logging.basicConfig(
+        filename=log_path,   
+        level=logging.INFO,    
+        format="%(asctime)s - %(levelname)s - %(message)s"
+    )
 
+    ### Process pdf files 
+    pdf_processor = PDFProcessor(data_directory=data_dir)
+    await pdf_processor.process_pdfs_in_directory()
+    docs = pdf_processor.load_txts_in_directory()
 
-### Configure logging
-logging.basicConfig(
-    filename=database_log,   
-    level=logging.INFO,    
-    format="%(asctime)s - %(levelname)s - %(message)s"
-)
-
-
-### Open text files
-directory = Path(data_dir)
-txt_files = [f.name for f in directory.glob("*.txt")]
-
-
-### Create a text splitter
-text_splitter = RecursiveCharacterTextSplitter(
-    chunk_size=1000,  
-    chunk_overlap=500,  
-    add_start_index=True,  
-    #separators=[r'CHAPTER\s+[IVXLCDM]*\s',r'\d+\.\s', r'\.\s'],
-    is_separator_regex=True,
-    keep_separator=True
-)
-
-### Load Pinecone configuration parameters
-embedding_model = config["embeddings"]["model"]
-vector_dimension = config["embeddings"]["dimension"]
-index_name = config["index"]["name"]
-namespace = config["index"]["namespace"]
-cloud_provider = config["index"]["cloud_provider"]
-aws_region = config["index"]["region"]
-similarity_metric = config["index"]["similarity_metric"]
-
-
-### Define embedding model and vector database
-embeddings = VertexAIEmbeddings(model=embedding_model)
-pinecone = Pinecone(api_key=PINECONE_API_KEY)
-
-
-### Create index if does not exist
-if index_name not in [index_info["name"] for index_info in pinecone.list_indexes()]:
-    pinecone.create_index(
-        name=index_name,
-        dimension=vector_dimension,
-        metric=similarity_metric,
-        spec=ServerlessSpec(cloud=cloud_provider, region=aws_region)
-        )
-    logging.info(f"Created index {index_name}")
-    while not pinecone.describe_index(index_name).status["ready"]:
-        time.sleep(1)
-else:
-    raise Exception(f"Index {index_name} already exists")
-
-
-vector_store = PineconeVectorStore(embedding=embeddings, index=pinecone.Index(index_name), namespace=namespace)
-
-
-### Load filtered text file and split it to Document objects
-total_records_inserted = 0
-for file in txt_files:
-    txt_path = os.path.join(data_dir, file)
-    loader = TextLoader(txt_path)
-    docs = loader.load()
+    ### Split text files to Documents
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_size=1000,  # chunk size (characters)
+        chunk_overlap=200,  # chunk overlap (characters)
+        add_start_index=True,  # track index in original document
+    )
     all_splits = text_splitter.split_documents(docs)
-    logging.info(f"Split the text file {txt_path} into {len(all_splits)} sub-documents.")
-    # Update source field in metadata 
-    all_splits = update_metadata("source", file, all_splits)
-    # Add Documents to Pinecone vector db
-    ids = create_db(vertextai_embedding_model=embedding_model, dimension=vector_dimension, splits=all_splits, vector_store=vector_store)
-    total_records_inserted += len(ids)
-    # Log information
-    for id in ids:
-        logging.info(f"Created record: {id}") 
+    msg= f"Split text into {len(all_splits)} sub-documents."
+    logging.log(msg=msg, level=logging.INFO)
+    print(msg)
 
-log = f"Inserted {total_records_inserted} records."
-logging.info(log)
-print(f"{log} See the log file for record ids.")
+    ### Define embeddings model
+    embeddings = VertexAIEmbeddings(model=config["embeddings"]["model"])
+
+    ### Create vector database
+    embedding_dim = len(embeddings.embed_query("hello world"))
+    index = faiss.IndexFlatL2(embedding_dim)
+    vector_store = FAISS(
+        embedding_function=embeddings,
+        index=index,
+        docstore=InMemoryDocstore(),
+        index_to_docstore_id={},
+    )
+
+    ### Index chunks
+    record_ids = vector_store.add_documents(documents=all_splits)
+
+    ### Log created ids
+    for id in record_ids:
+        msg = f"Created id: {id}"
+        logging.log(msg=msg, level=logging.INFO)
+        print(msg)
+
+asyncio.run(create_db())
 
 
