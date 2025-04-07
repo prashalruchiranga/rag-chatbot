@@ -4,14 +4,18 @@ import json
 import vertexai
 from langchain.chat_models import init_chat_model
 from langchain_google_vertexai import VertexAIEmbeddings
-from langchain_pinecone import PineconeVectorStore
-from pinecone import Pinecone
+import asyncio
+from pathlib import Path
 from chatbot_engine import ChatSession
+from vector_db import VectorDBCreator
+
 
 def main():
     # Define file paths
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    config_path = os.path.join(script_dir, "../", "config.json")
+    script_dir = Path(__file__).resolve().parent
+    data_dir = script_dir.joinpath("database", "data")
+    config_path = script_dir.joinpath("config.json")
+    log_path = script_dir.joinpath("logs.log")
     
     # Load config
     with open(config_path, "r") as file:
@@ -25,27 +29,29 @@ def main():
     GOOGLE_CLOUD_PROJECT = os.getenv("GOOGLE_CLOUD_PROJECT")
     GOOGLE_CLOUD_LOCATION = os.getenv("GOOGLE_CLOUD_LOCATION")
     GOOGLE_GENAI_USE_VERTEXAI = os.getenv("GOOGLE_GENAI_USE_VERTEXAI")
-    PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
 
     # Configure the language model
     vertexai.init(project=GOOGLE_CLOUD_PROJECT, location=GOOGLE_CLOUD_LOCATION)
     llm = init_chat_model(config["model"]["name"], model_provider=config["model"]["provider"])
 
-    # Define embedding model
-    embeddings = VertexAIEmbeddings(model=config["embeddings"]["model"])
-
-    # Define vector store
-    index_name = config["index"]["name"]
-    namespace = config["index"]["namespace"]
-    pinecone = Pinecone(api_key=PINECONE_API_KEY)
-    index = pinecone.Index(index_name)
-    vector_store = PineconeVectorStore(embedding=embeddings, index=index, namespace=namespace)
+    # Create vector database
+    vector_db_creator = VectorDBCreator(config_file_path=config_path, data_directory=data_dir, log_file_path=log_path)
+    vector_store = asyncio.run(vector_db_creator.create())
 
     # Initialize a ChatSession
     session = ChatSession(model=llm, vector_store=vector_store)
 
     # Example usage of the session (streaming a message)
-    session.stream_values(thread_id="abc12345", message="When will the president seat considered vacant?")
+    # query = "What are the powers president holds?"
+    thread = "abc12345"
+    while True:
+        query = input("query: ")
+        # for msg in session.stream_values(thread_id=thread, message=query):
+        #     if msg.type == "ai":
+        #         print(f"{msg.content.strip()}")
+        message_response = session.send_message(thread_id=thread, message=query)
+        print(f"{message_response.content}\n")
+
     
 if __name__ == "__main__":
     main()

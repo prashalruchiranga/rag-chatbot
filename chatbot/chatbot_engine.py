@@ -35,9 +35,11 @@ class ChatSession:
 
         # Add explicit message to prefer using tools
         guidelines = [
-            "You are a RAG chatbot. Your task is to respond to questions regarding Sri Lanka's legislation.",
+            "You are a RAG chatbot. Your task is to respond to questions regarding the provided text.",
+            "You can access the provided text using the 'retrive' tool.",
             "Always use the 'retrieve' tool unless the user is greeting.",
-            "Other than that don't respond to anything not related to Sri Lanka's legislation."
+            # "Always tell the user first if you're going to use the 'retrive' tool.",
+            "Don't respond to anything not related to the provided text."
             ]
         guidelines = " ".join(guidelines)
         init_message = SystemMessage(guidelines)
@@ -105,10 +107,14 @@ class ChatSession:
             stream_mode="values",
             config = {"configurable": {"thread_id": thread_id}}
         ):
-            step["messages"][-1].pretty_print()
+            # step["messages"][-1].pretty_print()
+            yield step["messages"][-1]
 
     
     def send_message(self, thread_id: str, message: str):
-        return self.graph.invoke(thread_id=thread_id, input={"message": message})
-
+        response =  self.graph.invoke(
+             {"messages": [{"role": "user", "content": message}]},
+             config={"configurable": {"thread_id": thread_id}}
+        )
+        return response["messages"][-1]
 
