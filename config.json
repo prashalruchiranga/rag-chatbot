@@ -1,23 +1,10 @@
 {
-    "saved_prompts": "prompts.json",
     "model": {
         "name": "gemini-2.5-pro-exp-03-25",
         "provider": "google_vertexai"
     },
-    "logging": {
-        "preprocessor": "preprocessor.log",
-        "database": "database.log",
-        "workflow": "workflow.log"
-    },
     "embeddings": {
         "model": "text-embedding-005",
         "dimension": 768
-    },
-    "index": {
-        "name": "data-vectors",
-        "namespace": "Acts",
-        "cloud_provider": "aws",
-        "region": "us-east-1",
-        "similarity_metric": "cosine"
     }
 }
