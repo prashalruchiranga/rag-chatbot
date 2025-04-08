@@ -10,7 +10,7 @@ from chatbot_engine import ChatSession
 from vector_db import VectorDBCreator
 
 
-def main():
+def setup():
     # Define file paths
     script_dir = Path(__file__).resolve().parent
     data_dir = script_dir.joinpath("database", "data")
@@ -21,6 +21,7 @@ def main():
     with open(config_path, "r") as file:
         config = json.load(file)
 
+    # Load .env
     dotenv_path = os.path.join(script_dir, "../.env")
 
     # Load environment variables
@@ -40,20 +41,17 @@ def main():
 
     # Initialize a ChatSession
     session = ChatSession(model=llm, vector_store=vector_store)
+    return session
 
-    # Example usage of the session (streaming a message)
-    # query = "What are the powers president holds?"
-    thread = "abc12345"
-    while True:
-        query = input("query: ")
-        # for msg in session.stream_values(thread_id=thread, message=query):
-        #     if msg.type == "ai":
-        #         print(f"{msg.content.strip()}")
-        message_response = session.send_message(thread_id=thread, message=query)
-        print(f"{message_response.content}\n")
+    # # Example usage of the session (streaming a message)
+    # thread = "abc12345"
+    # while True:
+    #     query = input("query: ")
+    #     # for msg in session.stream_values(thread_id=thread, message=query):
+    #     #     if msg.type == "ai":
+    #     #         print(f"{msg.content.strip()}")
+    #     message_response = session.send_message(thread_id=thread, message=query)
+    #     print(f"{message_response.content}\n")
 
-    
-if __name__ == "__main__":
-    main()
 
 
