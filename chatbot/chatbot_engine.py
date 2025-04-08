@@ -38,7 +38,6 @@ class ChatSession:
             "You are a RAG chatbot. Your task is to respond to questions regarding the provided text.",
             "You can access the provided text using the 'retrive' tool.",
             "Always use the 'retrieve' tool unless the user is greeting.",
-            # "Always tell the user first if you're going to use the 'retrive' tool.",
             "Don't respond to anything not related to the provided text."
             ]
         guidelines = " ".join(guidelines)

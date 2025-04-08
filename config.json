@@ -4,7 +4,6 @@
         "provider": "google_vertexai"
     },
     "embeddings": {
-        "model": "text-embedding-005",
-        "dimension": 768
+        "model": "text-embedding-005"
     }
 }
