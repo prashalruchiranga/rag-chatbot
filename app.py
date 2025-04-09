@@ -9,6 +9,9 @@ st.set_page_config(page_title="Gemini RAG-Chatbot")
 # Display a caption
 st.caption("Powered by Langchain, VertexAI, FAISS and Streamlit")
 
+#
+welcome_placeholder = st.header("What can I help with?")
+
 # Sidebar UI
 st.sidebar.header("🤖 RAG-Chatbot")
 st.sidebar.write("Chat with your documents! Combined with RAG to deliver accurate and context-aware responses.")
@@ -38,22 +41,23 @@ if "success_message" not in st.session_state:
 def clear_chat():
     st.session_state.messages = []
 
+def clear_screen():
+    welcome_placeholder.empty()
+
 success_placeholder = st.empty()
+info_placeholder = st.empty()
 
 # Create DB on button click
-if st.sidebar.button(label="Submit Files", type="primary"):
+if st.sidebar.button(label="SUBMIT", type="primary"):
     # Clear the chat history
     clear_chat()
+    # Clear screen
+    clear_screen()
     
-    with st.spinner(text="Creating the Vector Database...", show_time=True):
+    with st.spinner(text="Working on your files...", show_time=True):
         chat_session = setup()
-        st.session_state.chat_session = chat_session
-        success_placeholder.success("✅ Database successfully created. You may now chat.")
-
-# Show success message if needed (and handle auto-clear)
-# if st.session_state.success_message:
-#     success_placeholder = st.empty()
-#     success_placeholder.success("✅ Database successfully created. You may now chat.")
+    st.session_state.chat_session = chat_session
+    success_placeholder.success("✅ You may now chat with your documents")
 
 # Container for chat messages
 chat_container = st.container()
@@ -66,7 +70,8 @@ with chat_container:
 
 # Chat input logic based on DB status
 if st.session_state.chat_session is not None:
-    prompt = st.chat_input("What is up?", disabled=False)
+    prompt = st.chat_input("Whats up?", disabled=False)
+    clear_screen()
     if prompt:
         st.session_state.messages.append({"role": "user", "content": prompt})
         with chat_container:
@@ -77,6 +82,7 @@ if st.session_state.chat_session is not None:
                 full_response = ""
                 with st.spinner("Thinking"):
                     assistant_response = st.session_state.chat_session.send_message(thread_id="12345", message=prompt).content
+                    print(assistant_response)
                 for chunk in assistant_response.split():
                     full_response += chunk + " "
                     time.sleep(0.05)
@@ -84,6 +90,7 @@ if st.session_state.chat_session is not None:
                 message_placeholder.markdown(full_response)
                 st.session_state.messages.append({"role": "assistant", "content": full_response})
 else:
-    st.chat_input("Please submit files to create the vector database first to start chatting.", disabled=True)
+    st.chat_input("Whats up?", disabled=True)
+    info_placeholder.info("ℹ️ Please submit documents to start chatting with them")
 
 
