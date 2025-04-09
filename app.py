@@ -1,66 +1,64 @@
 import streamlit as st
-import random
 import time
-from setup import setup
+from setup import SetupChatbot
 
-# App title
-st.set_page_config(page_title="Gemini RAG-Chatbot")
-
-# Display a caption
-st.caption("Powered by Langchain, VertexAI, FAISS and Streamlit")
-
-#
-welcome_placeholder = st.header("What can I help with?")
-
-# Sidebar UI
-st.sidebar.header("🤖 RAG-Chatbot")
-st.sidebar.write("Chat with your documents! Combined with RAG to deliver accurate and context-aware responses.")
-
-st.sidebar.subheader("API Key")
-api_key = st.sidebar.text_input("Enter your HuggingFace API key", type="password")
-
-st.sidebar.subheader("Models and Parameters")
-selected_model = st.sidebar.selectbox(
-    "Select preferred model",
-    ("gemini-2.5-pro-exp-03-25", "gemini-2.0-flash", "gemini-2.5-pro-preview-03-25",
-     "gemini-2.0-flash-lite", "gemini-2.0-flash-thinking-exp-01-21")
-)
-documents = st.sidebar.file_uploader(label="Upload your files", accept_multiple_files=True)
+# Clear previous chats
+def clear_chat():
+    st.session_state.messages = []
+    welcome_placeholder.empty()
 
 # Initialize session state variables
-if "chat_session" not in st.session_state:
-    st.session_state.chat_session = None
+if "chatbot" not in st.session_state:
+    st.session_state.chatbot = None
 if "is_processing" not in st.session_state:
     st.session_state.is_processing = False
 if "messages" not in st.session_state:
     st.session_state.messages = []
 if "success_message" not in st.session_state:
     st.session_state.success_message = False
+if "files_submitted" not in st.session_state:
+    st.session_state.files_submitted = False
+if "welcome" not in st.session_state:
+    st.session_state.welcome = True
 
-# Function to clear chat history
-def clear_chat():
-    st.session_state.messages = []
+# App title
+st.set_page_config(page_title="Gemini RAG-Chatbot")
+# Display a caption
+st.caption("Powered by Langchain, VertexAI, FAISS and Streamlit")
+# Welcome text
+welcome_placeholder = st.header("What can I help with?")
 
-def clear_screen():
-    welcome_placeholder.empty()
-
+# Placeholders
 success_placeholder = st.empty()
 info_placeholder = st.empty()
 
-# Create DB on button click
-if st.sidebar.button(label="SUBMIT", type="primary"):
-    # Clear the chat history
-    clear_chat()
-    # Clear screen
-    clear_screen()
-    
-    with st.spinner(text="Working on your files...", show_time=True):
-        chat_session = setup()
-    st.session_state.chat_session = chat_session
-    success_placeholder.success("✅ You may now chat with your documents")
-
 # Container for chat messages
 chat_container = st.container()
+
+# Sidebar UI
+st.sidebar.header("🤖 RAG-Chatbot")
+st.sidebar.write("Chat with your documents! Combined with RAG to deliver accurate and context-aware responses.")
+st.sidebar.subheader("API Key")
+api_key = st.sidebar.text_input("Enter your HuggingFace API key", type="password")
+st.sidebar.subheader("Models and Parameters")
+selected_model = st.sidebar.selectbox(
+    "Select preferred model",
+    ("gemini-2.5-pro-exp-03-25", "gemini-2.0-flash", "gemini-2.5-pro-preview-03-25",
+     "gemini-2.0-flash-lite", "gemini-2.0-flash-thinking-exp-01-21")
+)
+st.session_state.files_submitted = False
+uploaded_files = st.sidebar.file_uploader(label="Upload your files", accept_multiple_files=True, type=["pdf"])
+if uploaded_files:
+    st.session_state.files_submitted = True
+
+# Create DB on button click
+if st.sidebar.button(label="SUBMIT", type="primary", disabled=not st.session_state.files_submitted):
+    clear_chat()
+    with st.spinner(text="Working on your files...", show_time=True):
+        setup = SetupChatbot(uploaded_files=uploaded_files)
+        chatbot = setup.setup()
+    st.session_state.chatbot = chatbot
+    success_placeholder.success("✅ You may now chat with your documents")
 
 # Show chat history in the container
 with chat_container:
@@ -69,10 +67,10 @@ with chat_container:
             st.markdown(message["content"])
 
 # Chat input logic based on DB status
-if st.session_state.chat_session is not None:
+if st.session_state.chatbot is not None:
     prompt = st.chat_input("Whats up?", disabled=False)
-    clear_screen()
     if prompt:
+        welcome_placeholder.empty()
         st.session_state.messages.append({"role": "user", "content": prompt})
         with chat_container:
             with st.chat_message("user"):
@@ -81,8 +79,8 @@ if st.session_state.chat_session is not None:
                 message_placeholder = st.empty()
                 full_response = ""
                 with st.spinner("Thinking"):
-                    assistant_response = st.session_state.chat_session.send_message(thread_id="12345", message=prompt).content
-                    print(assistant_response)
+                    assistant_response = st.session_state.chatbot.send_message(thread_id="12345", message=prompt).content
+                    # print(assistant_response)
                 for chunk in assistant_response.split():
                     full_response += chunk + " "
                     time.sleep(0.05)
