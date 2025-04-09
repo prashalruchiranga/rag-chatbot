@@ -10,16 +10,10 @@ def clear_chat():
 # Initialize session state variables
 if "chatbot" not in st.session_state:
     st.session_state.chatbot = None
-if "is_processing" not in st.session_state:
-    st.session_state.is_processing = False
 if "messages" not in st.session_state:
     st.session_state.messages = []
-if "success_message" not in st.session_state:
-    st.session_state.success_message = False
 if "files_submitted" not in st.session_state:
     st.session_state.files_submitted = False
-if "welcome" not in st.session_state:
-    st.session_state.welcome = True
 
 # App title
 st.set_page_config(page_title="Gemini RAG-Chatbot")
@@ -66,7 +60,7 @@ with chat_container:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
 
-# Chat input logic based on DB status
+# User, assistant model conversations
 if st.session_state.chatbot is not None:
     prompt = st.chat_input("Whats up?", disabled=False)
     if prompt:
@@ -79,8 +73,7 @@ if st.session_state.chatbot is not None:
                 message_placeholder = st.empty()
                 full_response = ""
                 with st.spinner("Thinking"):
-                    assistant_response = st.session_state.chatbot.send_message(thread_id="12345", message=prompt).content
-                    # print(assistant_response)
+                    assistant_response = st.session_state.chatbot.send_message(message=prompt).content
                 for chunk in assistant_response.split():
                     full_response += chunk + " "
                     time.sleep(0.05)

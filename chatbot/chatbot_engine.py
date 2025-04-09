@@ -5,6 +5,7 @@ from langgraph.checkpoint.memory import MemorySaver
 from langchain_core.tools import tool
 from langchain_core.messages import SystemMessage
 from langgraph.prebuilt import ToolNode
+import uuid
 
 
 class ChatSession:
@@ -14,6 +15,12 @@ class ChatSession:
         self.memory = MemorySaver()
         self.retrieve = self._make_retrieve_tool(self.vector_store)
         self.graph = self._build_graph()
+        self.thread_id = self._create_thread()
+
+
+    def _create_thread(self):
+        thread_id = str(uuid.uuid4())
+        return thread_id
 
 
     def _make_retrieve_tool(self, vector_store):
@@ -27,7 +34,7 @@ class ChatSession:
             )
             return serialized, retrieved_docs
         return retrieve
-
+    
 
     def _query_or_respond(self, state: MessagesState):
         """Generate tool call for retrieval or respond."""
@@ -48,8 +55,8 @@ class ChatSession:
         response = llm_with_tools.invoke(messages)
         # MessagesState appends messages to state instead of overwriting
         return {"messages": [response]}
-
     
+
     def _generate(self, state: MessagesState):
         """Generate answer."""
         # Get generated ToolMessages
@@ -60,6 +67,7 @@ class ChatSession:
             else:
                 break
         tool_messages = recent_tool_messages[::-1]
+
 
         # format into prompt
         docs_content = "\n\n".join(doc.content for doc in tool_messages)
@@ -100,20 +108,20 @@ class ChatSession:
         return graph_builder.compile(checkpointer=self.memory)
     
     
-    def stream_values(self, thread_id: str, message: str):
+    def stream_values(self, message: str):
         for step in self.graph.stream(
             {"messages": [{"role": "user", "content": message}]},
             stream_mode="values",
-            config = {"configurable": {"thread_id": thread_id}}
+            config = {"configurable": {"thread_id": self.thread_id}}
         ):
             # step["messages"][-1].pretty_print()
             yield step["messages"][-1]
 
     
-    def send_message(self, thread_id: str, message: str):
+    def send_message(self, message: str):
         response =  self.graph.invoke(
              {"messages": [{"role": "user", "content": message}]},
-             config={"configurable": {"thread_id": thread_id}}
+             config={"configurable": {"thread_id": self.thread_id}}
         )
         return response["messages"][-1]
 
