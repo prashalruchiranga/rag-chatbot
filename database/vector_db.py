@@ -9,9 +9,9 @@ from pdf_processor import PDFProcessor
 
 
 class VectorDBCreator:
-    def __init__(self, config_file_path, data_directory, log_file_path):
+    def __init__(self, source_data_files, config_file_path, log_file_path):
+        self.source_data_files = source_data_files
         self.config_path = config_file_path
-        self.data_dir = data_directory
         self.log_path = log_file_path
         self._load_config()
         self._setup_logging()
@@ -29,9 +29,10 @@ class VectorDBCreator:
 
     async def create(self):
         # Process pdf files 
-        pdf_processor = PDFProcessor(data_directory=self.data_dir)
-        await pdf_processor.process_pdfs_in_directory()
-        docs = pdf_processor.load_txts_in_directory()
+        pdf_processor = PDFProcessor(files=self.source_data_files)
+        # await pdf_processor.process_pdfs_in_directory()
+        # docs = pdf_processor.load_txts_in_directory()
+        docs = await pdf_processor.process_all_pdfs()
 
         # Split text files to Documents
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200, add_start_index=True)
