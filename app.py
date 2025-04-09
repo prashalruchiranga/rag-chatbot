@@ -83,5 +83,3 @@ if st.session_state.chatbot is not None:
 else:
     st.chat_input("Whats up?", disabled=True)
     info_placeholder.info("ℹ️ Please submit documents to start chatting with them")
-
-

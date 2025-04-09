@@ -71,5 +71,3 @@ class SetupChatbot:
     #     #         print(f"{msg.content.strip()}")
     #     message_response = session.send_message(thread_id=thread, message=query)
     #     print(f"{message_response.content}\n")
-
-

@@ -17,11 +17,9 @@ class ChatSession:
         self.graph = self._build_graph()
         self.thread_id = self._create_thread()
 
-
     def _create_thread(self):
         thread_id = str(uuid.uuid4())
         return thread_id
-
 
     def _make_retrieve_tool(self, vector_store):
         @tool(response_format="content_and_artifact")
@@ -34,7 +32,6 @@ class ChatSession:
             )
             return serialized, retrieved_docs
         return retrieve
-    
 
     def _query_or_respond(self, state: MessagesState):
         """Generate tool call for retrieval or respond."""
@@ -51,11 +48,9 @@ class ChatSession:
         init_message = SystemMessage(guidelines)
         # prepend the initialization message
         messages = [init_message] + state["messages"]
-        
         response = llm_with_tools.invoke(messages)
         # MessagesState appends messages to state instead of overwriting
         return {"messages": [response]}
-    
 
     def _generate(self, state: MessagesState):
         """Generate answer."""
@@ -67,8 +62,6 @@ class ChatSession:
             else:
                 break
         tool_messages = recent_tool_messages[::-1]
-
-
         # format into prompt
         docs_content = "\n\n".join(doc.content for doc in tool_messages)
         guidelines = [
@@ -84,11 +77,9 @@ class ChatSession:
             if message.type in ("human", "system") or (message.type == "ai" and not message.tool_calls)
         ]
         prompt = [SystemMessage(system_message_content)] + conversation_messages
-
         # Run
         response = self.model.invoke(prompt)
         return {"messages": [response]}
-
 
     def _build_graph(self):
         graph_builder = StateGraph(MessagesState)
@@ -106,22 +97,19 @@ class ChatSession:
         graph_builder.add_edge("tools", "generate")
         graph_builder.add_edge("generate", END)
         return graph_builder.compile(checkpointer=self.memory)
-    
-    
+
     def stream_values(self, message: str):
         for step in self.graph.stream(
             {"messages": [{"role": "user", "content": message}]},
             stream_mode="values",
-            config = {"configurable": {"thread_id": self.thread_id}}
+            config={"configurable": {"thread_id": self.thread_id}}
         ):
             # step["messages"][-1].pretty_print()
             yield step["messages"][-1]
 
-    
     def send_message(self, message: str):
-        response =  self.graph.invoke(
+        response = self.graph.invoke(
              {"messages": [{"role": "user", "content": message}]},
              config={"configurable": {"thread_id": self.thread_id}}
         )
         return response["messages"][-1]
-

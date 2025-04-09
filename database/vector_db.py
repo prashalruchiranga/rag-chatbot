@@ -30,19 +30,13 @@ class VectorDBCreator:
     async def create(self):
         # Process pdf files 
         pdf_processor = PDFProcessor(files=self.source_data_files)
-        # await pdf_processor.process_pdfs_in_directory()
-        # docs = pdf_processor.load_txts_in_directory()
         docs = await pdf_processor.process_all_pdfs()
-
         # Split text files to Documents
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200, add_start_index=True)
         all_splits = text_splitter.split_documents(docs)
         logging.info(f"Split text into {len(all_splits)} sub-documents.")
-        # print(f"Split text into {len(all_splits)} sub-documents.")
-
         # Define embeddings model
         embeddings = VertexAIEmbeddings(model=self.config["embeddings"]["model"])
-
         # Create vector database
         index = faiss.IndexFlatL2(len(embeddings.embed_query("hello world")))
         vector_store = FAISS(
@@ -51,15 +45,10 @@ class VectorDBCreator:
             docstore=InMemoryDocstore(), 
             index_to_docstore_id={}
         )
-
         # Index chunks
         record_ids = vector_store.add_documents(documents=all_splits)
-
         # Log created ids
         for id in record_ids:
             logging.info(f"Created id: {id}")
-            # print(f"Created id: {id}")
-
         return vector_store
     
-
