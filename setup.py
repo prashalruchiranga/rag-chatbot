@@ -1,9 +1,7 @@
 import os
 from dotenv import load_dotenv
 import json
-import vertexai
-from langchain.chat_models import init_chat_model
-from langchain_google_vertexai import VertexAIEmbeddings
+from langchain_google_genai import ChatGoogleGenerativeAI
 import asyncio
 from pathlib import Path
 from chatbot_engine import ChatSession
@@ -11,7 +9,9 @@ from vector_db import VectorDBCreator
 
 
 class SetupChatbot:
-    def __init__(self, uploaded_files):
+    def __init__(self, model, api_key, uploaded_files):
+        self.model = model
+        self.api_key = api_key
         self.uploaded_files = uploaded_files
         self.script_dir = Path(__file__).resolve().parent
         self.config_path = self.script_dir.joinpath("config.json")
@@ -28,23 +28,17 @@ class SetupChatbot:
     def load_environment_variables(self):
         dotenv_path = os.path.join(self.script_dir, "../.env")
         load_dotenv(dotenv_path)
-        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
-        os.environ["GOOGLE_CLOUD_PROJECT"] = os.getenv("GOOGLE_CLOUD_PROJECT")
-        os.environ["GOOGLE_CLOUD_LOCATION"] = os.getenv("GOOGLE_CLOUD_LOCATION")
-        os.environ["GOOGLE_GENAI_USE_VERTEXAI"] = os.getenv("GOOGLE_GENAI_USE_VERTEXAI")
 
     def initialize_model(self):
-        vertexai.init(
-            project=os.environ["GOOGLE_CLOUD_PROJECT"],
-            location=os.environ["GOOGLE_CLOUD_LOCATION"]
-        )
-        self.llm = init_chat_model(
-            self.config["model"]["name"],
-            model_provider=self.config["model"]["provider"]
-        )
+        self.llm = ChatGoogleGenerativeAI(
+            model=self.model,
+            temperature=0,
+            google_api_key=self.api_key
+            )
 
     async def create_vector_store(self):
         vector_db_creator = VectorDBCreator(
+            api_key=self.api_key,
             source_data_files=self.uploaded_files,
             config_file_path=self.config_path,
             log_file_path=self.log_path
@@ -61,6 +55,13 @@ class SetupChatbot:
         asyncio.run(self.create_vector_store())
         self.initialize_session()
         return self.session
+
+    def update_setup(self, new_model):
+        '''Creates a new chat session with updated model and previous vector store'''
+        self.model = new_model
+        self.initialize_model()
+        self.initialize_session()
+        return self.session   
 
     # # Example usage of the session (streaming a message)
     # thread = "abc12345"

@@ -1,6 +1,7 @@
 import logging
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_google_vertexai import VertexAIEmbeddings
+# from langchain_google_vertexai import VertexAIEmbeddings
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
 import faiss
 from langchain_community.docstore.in_memory import InMemoryDocstore
 from langchain_community.vectorstores import FAISS
@@ -9,7 +10,8 @@ from pdf_processor import PDFProcessor
 
 
 class VectorDBCreator:
-    def __init__(self, source_data_files, config_file_path, log_file_path):
+    def __init__(self, api_key, source_data_files, config_file_path, log_file_path):
+        self.api_key = api_key
         self.source_data_files = source_data_files
         self.config_path = config_file_path
         self.log_path = log_file_path
@@ -36,7 +38,8 @@ class VectorDBCreator:
         all_splits = text_splitter.split_documents(docs)
         logging.info(f"Split text into {len(all_splits)} sub-documents.")
         # Define embeddings model
-        embeddings = VertexAIEmbeddings(model=self.config["embeddings"]["model"])
+        # embeddings = VertexAIEmbeddings(model=self.config["embeddings"]["model"])
+        embeddings = GoogleGenerativeAIEmbeddings(model="models/text-embedding-004", google_api_key=self.api_key)
         # Create vector database
         index = faiss.IndexFlatL2(len(embeddings.embed_query("hello world")))
         vector_store = FAISS(

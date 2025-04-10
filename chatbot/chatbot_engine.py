@@ -39,10 +39,11 @@ class ChatSession:
 
         # Add explicit message to prefer using tools
         guidelines = [
-            "You are a RAG chatbot. Your task is to respond to questions regarding the provided text.",
-            "You can access the provided text using the 'retrive' tool.",
+            "You are a RAG chatbot. Your task is to respond to questions regarding the provided documents.",
+            "Stricly don't respond to anything not related to the provided documents.",
+            "You can access the provided documents using the 'retrive' tool.",
             "Always use the 'retrieve' tool unless the user is greeting.",
-            "Don't respond to anything not related to the provided text."
+            "Always reject queries not related to the provided documents."
             ]
         guidelines = " ".join(guidelines)
         init_message = SystemMessage(guidelines)
@@ -68,7 +69,9 @@ class ChatSession:
             "Use the following pieces of retrieved context to answer the question.",
             "If you don't know the answer, say that you don't know.",
             "Use 10 sentences maximum and keep the answer concise.",
-            "If the user is asking for a list of items, present them as a numbered or bulleted list, as appropriate to the scenario."
+            "If the user is asking for a list of items, present them as a numbered or bulleted list, as appropriate to the scenario.",
+            "Stricly don't respond to anything not related to retrieved context.",
+            "Always reject queries not related to retrieved context."
             ]
         guidelines = " ".join(guidelines)
         system_message_content = f"{guidelines}\n\n{docs_content}"
