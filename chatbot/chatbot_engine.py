@@ -68,7 +68,7 @@ class ChatSession:
         guidelines = [
             "Use the following pieces of retrieved context to answer the question.",
             "If you don't know the answer, say that you don't know.",
-            "Use 10 sentences maximum and keep the answer concise.",
+            # "Use 10 sentences maximum and keep the answer concise.",
             "If the user is asking for a list of items, present them as a numbered or bulleted list, as appropriate to the scenario.",
             "Stricly don't respond to anything not related to retrieved context.",
             "Always reject queries not related to retrieved context."
@@ -104,11 +104,12 @@ class ChatSession:
     def stream_values(self, message: str):
         for step in self.graph.stream(
             {"messages": [{"role": "user", "content": message}]},
-            stream_mode="values",
+            stream_mode="messages",
             config={"configurable": {"thread_id": self.thread_id}}
         ):
-            # step["messages"][-1].pretty_print()
-            yield step["messages"][-1]
+            msg_chunk = step[0]
+            if (msg_chunk.type == "AIMessageChunk") and (msg_chunk.content != ""):
+                yield msg_chunk.content
 
     def send_message(self, message: str):
         response = self.graph.invoke(
