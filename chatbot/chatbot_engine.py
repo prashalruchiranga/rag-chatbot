@@ -36,7 +36,6 @@ class ChatSession:
     def _query_or_respond(self, state: MessagesState):
         """Generate tool call for retrieval or respond."""
         llm_with_tools = self.model.bind_tools([self.retrieve])
-
         # Add explicit message to prefer using tools
         guidelines = [
             "You are a RAG chatbot. Your task is to respond to questions regarding the provided documents.",
@@ -68,7 +67,7 @@ class ChatSession:
         guidelines = [
             "Use the following pieces of retrieved context to answer the question.",
             "If you don't know the answer, say that you don't know.",
-            # "Use 10 sentences maximum and keep the answer concise.",
+            "Keep the answer concise.",
             "If the user is asking for a list of items, present them as a numbered or bulleted list, as appropriate to the scenario.",
             "Stricly don't respond to anything not related to retrieved context.",
             "Always reject queries not related to retrieved context."
@@ -92,7 +91,6 @@ class ChatSession:
         graph_builder.add_node("tools", ToolNode([self.retrieve])) 
         # Step 3: Generate a response using the retrieved content.
         graph_builder.add_node("generate", self._generate)
-
         graph_builder.set_entry_point("query_or_respond")
         graph_builder.add_conditional_edges(
             "query_or_respond", tools_condition, {END: END, "tools": "tools"}
