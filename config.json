@@ -1,9 +1,4 @@
 {
-    "model": {
-        "name": "gemini-2.5-pro-exp-03-25",
-        "provider": "google_vertexai"
-    },
-    "embeddings": {
-        "model": "text-embedding-005"
-    }
+    "embeddings_model": "models/text-embedding-004",
+    "temperature": 0
 }
