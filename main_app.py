@@ -17,22 +17,19 @@ def main():
     if "api_key" not in st.session_state:
         st.session_state.api_key = None
 
-    # App title
+    # Display page title
     st.set_page_config(page_title="RAG-Chatbot")
+    # Display a large header
     st.markdown("<h1 style='font-size: 30px;'>🤖 RAG-CHATBOT</h1>", unsafe_allow_html=True)
-
     # Display a caption
     st.caption("Powered by Langchain, Google AI Studio, FAISS and Streamlit")
-
     # Placeholders
-    info_placeholder = st.empty()
     created_new_session = st.empty()
     success_placeholder = st.empty()
-
     # Container for chat messages
     chat_container = st.container()
 
-    # Sidebar UI
+    # Sidebar user interface
     st.sidebar.header("Main Menu")
     st.sidebar.write("Chat with your documents! Combined with RAG to deliver accurate and context-aware responses.")
     st.sidebar.subheader("Models and Documents")
@@ -53,7 +50,7 @@ def main():
     if st.session_state.files_uploaded == False:
         st.info("ℹ️ Please submit at least one document to start chatting")
 
-    # Create DB on button click
+    # Create the vector db for RAG and chat session on button click
     if st.sidebar.button(label="SUBMIT", disabled=not st.session_state.files_uploaded):
         try:
             st.session_state.messages = []
@@ -68,12 +65,13 @@ def main():
         except:
             st.error("❌ Invalid API Key")
 
-    # Gemini API Key
+    # Get api key the user
     st.sidebar.subheader("API Key")
     api_key = st.sidebar.text_input("Enter your Google AI Studio API key", type="password", disabled=bool(st.session_state.session))
     if bool(api_key) != False:
         st.session_state.api_key = api_key
 
+    # Create a new chat session when the working model is changed via selectbox
     if (selected_model != st.session_state.working_model) and (st.session_state.session != None):
         new_session = st.session_state.setup.update_setup(new_model=selected_model)
         st.session_state.working_model = selected_model
@@ -88,7 +86,7 @@ def main():
             with st.chat_message(message["role"]):
                 st.markdown(message["content"])
 
-    # User, assistant model conversations
+    # User and assistant model conversations
     if st.session_state.session is not None:
         prompt = st.chat_input("Whats up?", disabled=False)
         if prompt:
