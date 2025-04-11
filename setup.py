@@ -2,6 +2,8 @@ import os
 from dotenv import load_dotenv
 import json
 from langchain_google_genai import ChatGoogleGenerativeAI
+from google.auth.exceptions import DefaultCredentialsError
+from langchain_google_genai._common import GoogleGenerativeAIError
 import asyncio
 from pathlib import Path
 from chatbot_engine import ChatSession
@@ -32,7 +34,7 @@ class SetupChatbot:
     def initialize_model(self):
         self.llm = ChatGoogleGenerativeAI(
             model=self.model,
-            temperature=0,
+            temperature=self.config["temperature"],
             google_api_key=self.api_key
             )
 
@@ -51,24 +53,20 @@ class SetupChatbot:
     def setup(self):
         self.load_config()
         self.load_environment_variables()
-        self.initialize_model()
-        asyncio.run(self.create_vector_store())
+        try:
+            self.initialize_model()
+            asyncio.run(self.create_vector_store())
+        except (DefaultCredentialsError, GoogleGenerativeAIError) as e:
+            raise ValueError(f"Invalid API key")
         self.initialize_session()
         return self.session
 
     def update_setup(self, new_model):
-        '''Creates a new chat session with updated model and previous vector store'''
         self.model = new_model
-        self.initialize_model()
+        try:
+            self.initialize_model()
+        except (DefaultCredentialsError, GoogleGenerativeAIError) as e:
+            raise ValueError(f"Invalid API key")
         self.initialize_session()
-        return self.session   
-
-    # # Example usage of the session (streaming a message)
-    # thread = "abc12345"
-    # while True:
-    #     query = input("query: ")
-    #     # for msg in session.stream_values(thread_id=thread, message=query):
-    #     #     if msg.type == "ai":
-    #     #         print(f"{msg.content.strip()}")
-    #     message_response = session.send_message(thread_id=thread, message=query)
-    #     print(f"{message_response.content}\n")
+        return self.session
+    
