@@ -7,6 +7,34 @@ class PDFProcessor:
     def __init__(self, files: List):
         self.files = files
 
+    def convert_pdf_to_documents(self, file) -> List[Document]:
+        '''
+        Convert an in-memory PDF file to a list of LangChain Document objects.
+        '''
+        file_bytes = file.read()
+        doc = fitz.open(stream=file_bytes, filetype="pdf")
+        documents = []
+
+        for page_num in range(len(doc)):
+            page = doc.load_page(page_num)
+            text = page.get_text()
+            metadata = {
+                "source": getattr(file, "filename", "in-memory"),
+                "page": page_num
+            }
+            documents.append(Document(page_content=text, metadata=metadata))
+        return documents
+
+    async def process_all_pdfs(self) -> List[Document]:
+        '''
+        Process all in-memory PDFs and return a flat list of Document objects.
+        '''
+        all_documents = []
+        for file in self.files:
+            documents = self.convert_pdf_to_documents(file)
+            all_documents.extend(documents)
+        return all_documents
+    
     # async def load_pdf(self, pdf_path: Path):
     #     loader = PyPDFLoader(str(pdf_path))
     #     pages = []
@@ -38,32 +66,4 @@ class PDFProcessor:
     #         use_multithreading=True
     #     )
     #     return loader.load()
-
-    def convert_pdf_to_documents(self, file) -> List[Document]:
-        '''
-        Convert an in-memory PDF file to a list of LangChain Document objects.
-        '''
-        file_bytes = file.read()
-        doc = fitz.open(stream=file_bytes, filetype="pdf")
-        documents = []
-
-        for page_num in range(len(doc)):
-            page = doc.load_page(page_num)
-            text = page.get_text()
-            metadata = {
-                "source": getattr(file, "filename", "in-memory"),
-                "page": page_num
-            }
-            documents.append(Document(page_content=text, metadata=metadata))
-        return documents
-
-    async def process_all_pdfs(self) -> List[Document]:
-        '''
-        Process all in-memory PDFs and return a flat list of Document objects.
-        '''
-        all_documents = []
-        for file in self.files:
-            documents = self.convert_pdf_to_documents(file)
-            all_documents.extend(documents)
-        return all_documents
     
