@@ -1,6 +1,5 @@
 import logging
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-# from langchain_google_vertexai import VertexAIEmbeddings
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 import faiss
 from langchain_community.docstore.in_memory import InMemoryDocstore
@@ -38,8 +37,7 @@ class VectorDBCreator:
         all_splits = text_splitter.split_documents(docs)
         logging.info(f"Split text into {len(all_splits)} sub-documents.")
         # Define embeddings model
-        # embeddings = VertexAIEmbeddings(model=self.config["embeddings"]["model"])
-        embeddings = GoogleGenerativeAIEmbeddings(model="models/text-embedding-004", google_api_key=self.api_key)
+        embeddings = GoogleGenerativeAIEmbeddings(model=self.config["embeddings_model"], google_api_key=self.api_key)
         # Create vector database
         index = faiss.IndexFlatL2(len(embeddings.embed_query("hello world")))
         vector_store = FAISS(
