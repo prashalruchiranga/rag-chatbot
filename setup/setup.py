@@ -2,12 +2,12 @@ import os
 from dotenv import load_dotenv
 import json
 from langchain_google_genai import ChatGoogleGenerativeAI
-from google.auth.exceptions import DefaultCredentialsError
 from langchain_google_genai._common import GoogleGenerativeAIError
+from google.auth.exceptions import DefaultCredentialsError
 import asyncio
 from pathlib import Path
-from chatbot_engine import ChatSession
-from vector_db import VectorDBCreator
+from chatbot.chatbot_engine import ChatSession
+from database.vector_db import VectorDBCreator
 
 
 class SetupChatbot:
@@ -16,8 +16,8 @@ class SetupChatbot:
         self.api_key = api_key
         self.uploaded_files = uploaded_files
         self.script_dir = Path(__file__).resolve().parent
-        self.config_path = self.script_dir.joinpath("config.json")
-        self.log_path = self.script_dir.joinpath("logs.log")
+        self.config_path = self.script_dir.joinpath("../", "config.json")
+        self.log_path = self.script_dir.joinpath("../", "logs.log")
         self.config = None
         self.llm = None
         self.vector_store = None
