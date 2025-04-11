@@ -5,7 +5,7 @@ import faiss
 from langchain_community.docstore.in_memory import InMemoryDocstore
 from langchain_community.vectorstores import FAISS
 import json
-from pdf_processor import PDFProcessor
+from database.pdf_processor import PDFProcessor
 
 
 class VectorDBCreator:

@@ -1,10 +1,5 @@
-from langchain_community.document_loaders import PyPDFLoader
-from langchain_community.document_loaders import DirectoryLoader, TextLoader
-from pathlib import Path
-import asyncio
 from langchain_core.documents import Document
 from typing import List
-from io import BytesIO
 import fitz
 
 
@@ -45,9 +40,9 @@ class PDFProcessor:
     #     return loader.load()
 
     def convert_pdf_to_documents(self, file) -> List[Document]:
-        """
+        '''
         Convert an in-memory PDF file to a list of LangChain Document objects.
-        """
+        '''
         file_bytes = file.read()
         doc = fitz.open(stream=file_bytes, filetype="pdf")
         documents = []
@@ -60,17 +55,15 @@ class PDFProcessor:
                 "page": page_num
             }
             documents.append(Document(page_content=text, metadata=metadata))
-
         return documents
 
     async def process_all_pdfs(self) -> List[Document]:
-        """
+        '''
         Process all in-memory PDFs and return a flat list of Document objects.
-        """
+        '''
         all_documents = []
         for file in self.files:
             documents = self.convert_pdf_to_documents(file)
             all_documents.extend(documents)
         return all_documents
-
-
+    
