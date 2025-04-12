@@ -21,7 +21,7 @@ The chatbot is deployed in Streamlit Community Cloud.
 - 🧬 **Embeddings Model:** Through the Gemini API
 - 🔍 **Vector Database:** FAISS 
 - 🌐 **Frontend Interface:** Streamlit 
-- 🧠  **LLM Integration:** Google AI Studio  
+- 🧠 **LLM Integration:** Google AI Studio  
 
 ## Installation
 
