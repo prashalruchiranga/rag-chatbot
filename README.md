@@ -18,7 +18,8 @@ The chatbot is deployed in Streamlit Community Cloud.
 
 - 🐍 **Programming Language:** Python 3.13.0 
 - 🔗 **LLM Orchestration:** LangChain, LangGraph 
-- 🔍 **Embedding & Vector Search:** FAISS 
+- 🧬 **Embeddings Model:** Through the Gemini API
+- 🔍 **Vector Database:** FAISS 
 - 🌐 **Frontend Interface:** Streamlit 
 - 🧠  **LLM Integration:** Google AI Studio  
 
