@@ -71,6 +71,9 @@ def main():
     if bool(api_key) != False:
         st.session_state.api_key = api_key
 
+    # Add X link
+    st.sidebar.markdown("[Connect with me on X (Formerly twitter)](https://x.com/prashalr)")
+
     # Create a new chat session when the working model is changed via selectbox
     if (selected_model != st.session_state.working_model) and (st.session_state.session != None):
         new_session = st.session_state.setup.update_setup(new_model=selected_model)
