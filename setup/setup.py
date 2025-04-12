@@ -1,5 +1,3 @@
-import os
-from dotenv import load_dotenv
 import json
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_google_genai._common import GoogleGenerativeAIError
@@ -27,10 +25,6 @@ class SetupChatbot:
         with open(self.config_path, "r") as file:
             self.config = json.load(file)
 
-    def load_environment_variables(self):
-        dotenv_path = os.path.join(self.script_dir, "../.env")
-        load_dotenv(dotenv_path)
-
     def initialize_model(self):
         self.llm = ChatGoogleGenerativeAI(
             model=self.model,
@@ -52,7 +46,6 @@ class SetupChatbot:
 
     def setup(self):
         self.load_config()
-        self.load_environment_variables()
         try:
             self.initialize_model()
             asyncio.run(self.create_vector_store())
