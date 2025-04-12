@@ -1,0 +1,40 @@
+**A chatbot using Retrieval-Augmented Generation (RAG) to answer questions or provide information based on provided documents.**
+
+## Overview
+
+This project is a document-aware chatbot powered by Retrieval-Augmented Generation (RAG), designed to provide intelligent, context-aware responses strictly within the scope of user-uploaded documents. It allows users to upload a variety of documents, from which the chatbot extracts and embeds text into a vector database for efficient semantic search and retrieval. Once documents are uploaded, users can engage in a multi-turn conversation with the chatbot. Leveraging the retained context of previous messages, the chatbot is capable of maintaining coherent and relevant dialogue throughout the session. 
+
+Importantly, the chatbot is domain-constrained—it strictly answers questions related to the uploaded documents and does not entertain queries outside their scope. When presented with questions beyond the domain of the documents or when it lacks sufficient information, the chatbot explicitly states that it does not know the answer. This system is ideal for scenarios requiring focused information retrieval, such as customer support based on internal documentation, legal or technical document Q&A, and research assistance.
+
+## Technologies Used
+
+- 🐍 **Programming Language:** Python 3.13.0 
+- 🔗 **LLM Orchestration:** LangChain, LangGraph 
+- 🔍 **Embedding & Vector Search:** FAISS 
+- 🌐 **Frontend Interface:** Streamlit 
+- 🧠  **LLM Integration:** Google AI Studio  
+
+## Installation
+
+Clone the repository.
+```
+git clone https://github.com/prashalruchiranga/RAG-Chatbot.git
+cd RAG-Chatbot
+```
+Create a virtual environment and activate. Ensure you are using **Python 3.13.0 or above**, as this project has not been tested with earlier versions.
+```
+python3.13 -m venv venv
+source venv/bin/activate
+```
+Install project requirements.
+```
+pip install -r requirements.txt
+```
+Run the chatbot
+```
+python -m streamlit run main_app.py
+```
+
+## About
+
+RAG-Chatbot is a open-source project. Contributions from the entire community are warmly welcomed.
