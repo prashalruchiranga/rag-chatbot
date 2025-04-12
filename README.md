@@ -8,8 +8,6 @@ Once documents are uploaded, users can engage in a multi-turn conversation with 
 
 Importantly, the chatbot is domain-constrained. It strictly answers questions related to the uploaded documents and does not entertain queries outside their scope. When presented with questions beyond the domain of the documents or when it lacks sufficient information, the chatbot explicitly states that it does not know the answer. 
 
-This system is ideal for scenarios requiring focused information retrieval, such as customer support based on internal documentation, legal or technical document Q&A, and research assistance.
-
 ## Technologies Used
 
 - 🐍 **Programming Language:** Python 3.13.0 
