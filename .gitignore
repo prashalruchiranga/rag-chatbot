@@ -5,3 +5,4 @@ env/
 *key.json
 *.log
 __pycache__
+requirements.in

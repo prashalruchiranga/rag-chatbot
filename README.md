@@ -2,9 +2,11 @@
 
 ## Overview
 
-This project is a document-aware chatbot powered by Retrieval-Augmented Generation (RAG), designed to provide intelligent, context-aware responses strictly within the scope of user-uploaded documents. It allows users to upload a variety of documents, from which the chatbot extracts and embeds text into a vector database for efficient semantic search and retrieval. Once documents are uploaded, users can engage in a multi-turn conversation with the chatbot. Leveraging the retained context of previous messages, the chatbot is capable of maintaining coherent and relevant dialogue throughout the session. 
+This project is a document-aware chatbot powered by Retrieval-Augmented Generation (RAG), designed to provide intelligent, context-aware responses strictly within the scope of user-uploaded documents. It allows users to upload a variety of documents, from which the chatbot extracts and embeds text into a vector database for efficient semantic search and retrieval. 
 
-Importantly, the chatbot is domain-constrained—it strictly answers questions related to the uploaded documents and does not entertain queries outside their scope. When presented with questions beyond the domain of the documents or when it lacks sufficient information, the chatbot explicitly states that it does not know the answer. This system is ideal for scenarios requiring focused information retrieval, such as customer support based on internal documentation, legal or technical document Q&A, and research assistance.
+Once documents are uploaded, users can engage in a multi-turn conversation with the chatbot. Leveraging the retained context of previous messages, the chatbot is capable of maintaining coherent and relevant dialogue throughout the session. 
+
+Importantly, the chatbot is domain-constrained—it strictly answers questions related to the uploaded documents and does not entertain queries outside their scope. When presented with questions beyond the domain of the documents or when it lacks sufficient information, the chatbot explicitly states that it does not know the answer. 
 
 ## Technologies Used
 
@@ -30,7 +32,7 @@ Install project requirements.
 ```
 pip install -r requirements.txt
 ```
-Run the chatbot
+Run the chatbot.
 ```
 python -m streamlit run main_app.py
 ```
