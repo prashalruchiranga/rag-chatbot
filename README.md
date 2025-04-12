@@ -6,7 +6,7 @@ This project is a document-aware chatbot powered by Retrieval-Augmented Generati
 
 Once documents are uploaded, users can engage in a multi-turn conversation with the chatbot. Leveraging the retained context of previous messages, the chatbot is capable of maintaining coherent and relevant dialogue throughout the session. 
 
-Importantly, the chatbot is domain-constrained—it strictly answers questions related to the uploaded documents and does not entertain queries outside their scope. When presented with questions beyond the domain of the documents or when it lacks sufficient information, the chatbot explicitly states that it does not know the answer. 
+Importantly, the chatbot is domain-constrained-it strictly answers questions related to the uploaded documents and does not entertain queries outside their scope. When presented with questions beyond the domain of the documents or when it lacks sufficient information, the chatbot explicitly states that it does not know the answer. 
 
 ## Technologies Used
 
