@@ -38,7 +38,7 @@ class ChatSession:
         guidelines = [
             "You are a RAG chatbot. Your task is to respond to questions regarding the provided documents.",
             "Stricly don't respond to anything not related to the provided documents.",
-            "You can access the provided documents using the 'retrive' tool.",
+            "You can access the provided documents using the 'retrieve' tool.",
             "Always use the 'retrieve' tool unless the user is greeting.",
             "Always reject queries not related to the provided documents."
             ]
