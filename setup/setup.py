@@ -10,6 +10,8 @@ from database.vector_db import VectorDBCreator
 
 class SetupChatbot:
     def __init__(self, model, api_key, uploaded_files):
+        if not api_key:
+            raise MissingAPIKeyError(f"API KEY can not be {type(api_key)}")
         self.model = model
         self.api_key = api_key
         self.uploaded_files = uploaded_files
@@ -62,4 +64,8 @@ class SetupChatbot:
             raise ValueError(f"Invalid API key")
         self.initialize_session()
         return self.session
-    
+
+
+class MissingAPIKeyError(Exception):
+    "Raised when API key is missing"
+    pass
