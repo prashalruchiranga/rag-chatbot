@@ -46,4 +46,4 @@ python -m streamlit run main_app.py
 
 ## About
 
-RAG-Chatbot is a open-source project. Contributions from the entire community are warmly welcomed.
+This is an open-source project. Contributions from the entire community are warmly welcomed.
