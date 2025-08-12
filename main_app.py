@@ -1,5 +1,5 @@
 import streamlit as st
-from setup.setup import SetupChatbot
+from setup.setup import SetupChatbot, MissingAPIKeyError
 
 
 def main():
@@ -62,6 +62,8 @@ def main():
             st.session_state.working_model = selected_model
             created_new_session.info(f"ℹ️ Created a new chat session with {st.session_state.working_model}")
             success_placeholder.success("✅ You may now chat with your documents")
+        except MissingAPIKeyError:
+            st.error("❌ API Key not provided")
         except:
             st.error("❌ Invalid API Key")
 
