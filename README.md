@@ -27,8 +27,8 @@ The chatbot is deployed in Streamlit Community Cloud.
 
 Clone the repository.
 ```
-git clone https://github.com/prashalruchiranga/RAG-Chatbot.git
-cd RAG-Chatbot
+git clone https://github.com/prashalruchiranga/rag-chatbot.git
+cd rag-chatbot
 ```
 Create a virtual environment and activate. Ensure you are using **Python 3.13.0 or above**, as this project has not been tested with earlier versions.
 ```
