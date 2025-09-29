@@ -32,18 +32,18 @@ cd rag-chatbot
 ```
 Create a virtual environment and activate. Ensure you are using **Python 3.13.0 or above**, as this project has not been tested with earlier versions.
 ```
-python3.13 -m venv venv
-source venv/bin/activate
+uv venv --python=python3.13
+source .venv/bin/activate
 ```
-Install project requirements.
+Install development dependencies.
 ```
-pip install -r requirements.txt
+uv sync
 ```
 Run the chatbot.
 ```
-python -m streamlit run main_app.py
+python -m streamlit run main.py
 ```
 
-## About
+## License
 
-This is an open-source project. Contributions from the entire community are warmly welcomed.
+Licensed under MIT. See the [LICENSE](https://github.com/prashalruchiranga/rag-chatbot/blob/main/LICENSE).
