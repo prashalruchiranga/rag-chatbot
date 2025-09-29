@@ -12,7 +12,7 @@ Importantly, the chatbot is domain-constrained. It strictly answers questions re
 
 The chatbot is deployed in Streamlit Community Cloud. 
 
-[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://rag-chat-bot.streamlit.app/)
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://chat-rag-bot.streamlit.app/)
 
 ## Technologies Used
 
